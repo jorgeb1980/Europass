@@ -10,7 +10,7 @@
 		<project.build.sourceEncoding>cp1252</project.build.sourceEncoding>
 	</properties>
 	<build>
-		<finalName>ClassFinder</finalName>
+		<finalName>Europass</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
