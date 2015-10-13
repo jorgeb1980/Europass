@@ -1,3 +1,4 @@
+import org.junit.Assert;
 import org.junit.Test;
 
 import europass.beans.ResumeBean;
@@ -17,6 +18,7 @@ public class TestDefaultCV extends BaseTest {
 		}
 		catch (EuropassException e) {
 			e.printStackTrace();
+			Assert.fail();
 		}
 	}
 

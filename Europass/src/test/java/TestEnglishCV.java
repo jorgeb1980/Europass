@@ -1,6 +1,7 @@
 
 import java.util.Locale;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import europass.beans.ResumeBean;
@@ -17,6 +18,7 @@ public class TestEnglishCV extends BaseTest {
 		}
 		catch (EuropassException e) {
 			e.printStackTrace();
+			Assert.fail();
 		}
 	}
 }
