@@ -93,7 +93,6 @@ public class EuropassBuilder {
 	 * Builds an iText document based on the CV information.
 	 * @param information CV information.
 	 * @param os Where to output the binary result (PDF document).
-	 * @throws DocumentException Error de formateo iText.
 	 * @throws EuropassException Library exception wrapper. 
 	 */
 	public void buildCV(ResumeBean information, OutputStream os) 
