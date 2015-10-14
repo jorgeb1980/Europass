@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Professional experience item.  
  */
-public class ExperienceBean implements Comparable<ExperienceBean> {
+public class WorkExperienceBean implements Comparable<WorkExperienceBean> {
 
 	//--------------------------------------------------------
 	// Bean properties
@@ -112,7 +112,7 @@ public class ExperienceBean implements Comparable<ExperienceBean> {
 	 * @param jobTitle Job title.
 	 * @param description Job experience description.
 	 */
-	public ExperienceBean(String company, Date startDate, Date endDate,
+	public WorkExperienceBean(String company, Date startDate, Date endDate,
 			String jobTitle, String description) {
 		super();
 		this.company = company;
@@ -123,7 +123,7 @@ public class ExperienceBean implements Comparable<ExperienceBean> {
 	}
 	
 	@Override
-	public int compareTo(ExperienceBean o) {
+	public int compareTo(WorkExperienceBean o) {
 		// Ascending start date order
 		return o.getStartDate().compareTo(this.getStartDate());
 	}

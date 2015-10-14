@@ -1,5 +1,8 @@
 package europass.beans;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Contains the entire resumé information.
  */
@@ -11,15 +14,48 @@ public class ResumeBean {
 	/** Personal information. */
 	private PersonalInfoBean personalInfo;
 	/** Professsional experience. */
-	private ProfessionalExperienceBean expProfesional;
+	private List<WorkExperienceBean> workExperience;
 	/** Certifications and training. */
-	private EducationBean education;
+	private List<TrainingBean> trainings;
 	/** User's languages. */
-	private LanguagesBean languages;
+	private List<LanguageBean> languages;
 	
 	//---------------------------------------------------
 	// Bean methods
 
+	/**
+	 * Creates an empty resumé.
+	 */
+	public ResumeBean() {
+		trainings = new LinkedList<>();
+		languages = new LinkedList<>();
+		workExperience = new LinkedList<>();
+	}
+	
+	/**
+	 * Adds a specific training to the list.
+	 * @param bean Training to add.
+	 */
+	public void addTraining(TrainingBean bean) {
+		trainings.add(bean);
+	}
+	
+	/**
+	 * Adds a language skill to the list.
+	 * @param language Language skill
+	 */
+	public void addLanguage(LanguageBean language) {
+		languages.add(language);
+	}
+	
+	/**
+	 * Adds an experience item.
+	 * @param bean Experience item.
+	 */
+	public void addExperience(WorkExperienceBean bean) {
+		workExperience.add(bean);
+	}
+	
 	/**
 	 * Returns the user's personal information.
 	 * @return User's personal information.
@@ -40,47 +76,23 @@ public class ResumeBean {
 	 * Returns the user's professional experience.
 	 * @return User's professional experience.
 	 */
-	public ProfessionalExperienceBean getProfessionalExperience() {
-		return expProfesional;
-	}
-
-	/**
-	 * Sets the user's professional experience.
-	 * @param professionalExp User's professional experience
-	 */
-	public void setProfessionalExperience(ProfessionalExperienceBean professionalExp) {
-		this.expProfesional = professionalExp;
+	public List<WorkExperienceBean> getProfessionalExperience() {
+		return workExperience;
 	}
 
 	/**
 	 * Returns the user's training and education.
 	 * @return User's training and education.
 	 */
-	public EducationBean getEducation() {
-		return education;
-	}
-
-	/**
-	 * Sets the user's training and education.
-	 * @param education User's training and education.
-	 */
-	public void setEducacionFormacion(EducationBean education) {
-		this.education = education;
+	public List<TrainingBean> getTrainings() {
+		return trainings;
 	}
 
 	/**
 	 * Retuns the user's languages.
 	 * @return User's languages.
 	 */
-	public LanguagesBean getLanguages() {
+	public List<LanguageBean> getLanguages() {
 		return languages;
 	}
-
-	/**
-	 * Sets the user's languages.
-	 * @param languages User's languages.
-	 */
-	public void setLanguages(LanguagesBean languages) {
-		this.languages = languages;
-	}	
 }

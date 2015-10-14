@@ -25,14 +25,11 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
-import europass.beans.EducationBean;
-import europass.beans.ExperienceBean;
 import europass.beans.LanguageBean;
-import europass.beans.LanguagesBean;
 import europass.beans.PersonalInfoBean;
-import europass.beans.ProfessionalExperienceBean;
 import europass.beans.ResumeBean;
 import europass.beans.TrainingBean;
+import europass.beans.WorkExperienceBean;
 import europass.pdf.EuropassFonts;
 
 /**
@@ -96,7 +93,6 @@ public class EuropassBuilder {
 	 * Builds an iText document based on the CV information.
 	 * @param information CV information.
 	 * @param os Where to output the binary result (PDF document).
-	 * @throws DocumentException Error de formateo iText.
 	 * @throws EuropassException Library exception wrapper. 
 	 */
 	public void buildCV(ResumeBean information, OutputStream os) 
@@ -108,7 +104,7 @@ public class EuropassBuilder {
 			setupDocument(document);		
 			paintPersonalInfo(document, information.getPersonalInfo());		
 			paintProfessionalExperience(document, information.getProfessionalExperience());		
-			paintTrainingCertifications(document, information.getEducation());		
+			paintTrainingCertifications(document, information.getTrainings());		
 			paintLanguages(document, information.getLanguages());		
 			document.close();		
 			writer.flush();		
@@ -293,11 +289,11 @@ public class EuropassBuilder {
 	 */
 	private void paintLanguages(
 			Document document, 
-			LanguagesBean languages)
+			List<LanguageBean> languages)
 					throws DocumentException, IOException {
 		if (languages != null) {
 			separatorSection(document, i18n("languages.title"));
-			if (languages.getLanguages() != null) {
+			if (languages != null) {
 				PdfPTable languagesTable = new PdfPTable(new float[]{25, 25, 25, 25});
 				PdfPCell languagesCell = cell(i18n("languages.header"), EuropassFonts.littleBlueFont());
 				languagesCell.setPaddingBottom(10);
@@ -312,7 +308,7 @@ public class EuropassBuilder {
 				PdfPCell readingCell = cell(i18n("reading.title"), EuropassFonts.littleBlueFont());
 				languagesHeadersBorders(readingCell);
 				languagesTable.addCell(readingCell);
-				for (LanguageBean language: languages.getLanguages()) {
+				for (LanguageBean language: languages) {
 					PdfPCell languageCell = cell(language.getLanguage());
 					languagesTable.addCell(languageCell);
 					PdfPCell conversationLevelCell = cell(language.getConversationLevel());
@@ -352,11 +348,11 @@ public class EuropassBuilder {
 	 */
 	private void paintTrainingCertifications(
 			Document document,
-			EducationBean education)  
+			List<TrainingBean> education)  
 					throws DocumentException, IOException {
 		if (education != null) {
 			separatorSection(document, i18n("training.title"));
-			List<TrainingBean> trainings = education.getTrainings();
+			List<TrainingBean> trainings = education;
 			if (trainings != null) {
 				Collections.sort(trainings);
 				for (TrainingBean training: trainings) {
@@ -381,15 +377,14 @@ public class EuropassBuilder {
 	 * @param professionalExperience Uers's professional experience.
 	 */
 	private void paintProfessionalExperience(Document document,
-			ProfessionalExperienceBean professionalExperience) 
+			List<WorkExperienceBean> professionalExperience) 
 					throws DocumentException, IOException {
 		if (professionalExperience != null) {
 			separatorSection(document, i18n("experience.title"));
-			List<ExperienceBean> experiences = professionalExperience.getExperiences();
-			if (experiences != null) {
+			if (professionalExperience != null) {
 				// Sort experiences by date
-				Collections.sort(experiences);
-				for (ExperienceBean exp: experiences) {
+				Collections.sort(professionalExperience);
+				for (WorkExperienceBean exp: professionalExperience) {
 					// Section title is the time period (left side)
 					String title = buildTimePeriod(exp.getStartDate(), exp.getEndDate());
 					PdfPTable content = new PdfPTable(new float[]{100});
