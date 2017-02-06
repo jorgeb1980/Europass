@@ -3,7 +3,7 @@ jdk:
 - oraclejdk8
 branches:
   only:
-  - v.+
+  - /v.+/
 deploy:
   provider: releases
   api_key:
