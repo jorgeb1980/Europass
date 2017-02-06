@@ -3,7 +3,7 @@ jdk:
 - oraclejdk8
 branches:
   only:
-  - /v.+/
+  - /^v.+/
 deploy:
   skip_cleanup: true
   provider: releases
