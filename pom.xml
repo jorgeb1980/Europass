@@ -3,8 +3,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cv</groupId>
 	<artifactId>europass</artifactId>
-	<version>1.1.1</version>
+	<version>1.1.5</version>
 	<packaging>jar</packaging>
+	
 
 	<properties>
 		<project.build.sourceEncoding>cp1252</project.build.sourceEncoding>
