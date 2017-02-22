@@ -1,4 +1,4 @@
-# Europass [![Build Status](https://travis-ci.org/jorgeb1980/Europass.svg?branch=master)](https://travis-ci.org/jorgeb1980/ClassFinder/builds/latest)
+# Europass [![Build Status](https://travis-ci.org/jorgeb1980/Europass.svg?branch=master)](https://travis-ci.org/jorgeb1980/ClassFinder/builds/latest) [![codecov](https://codecov.io/gh/jorgeb1980/Europass/branch/master/graph/badge.svg)](https://codecov.io/gh/jorgeb1980/Europass)
 =======================
 
 Java library that renders a PDF version of the information expected for a Europass format resumé.

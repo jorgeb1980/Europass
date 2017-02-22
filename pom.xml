@@ -5,9 +5,6 @@
 	<artifactId>europass</artifactId>
 	<version>1.1.5</version>
 	<packaging>jar</packaging>
-	
-	
-	
 
 	<properties>
 		<project.build.sourceEncoding>cp1252</project.build.sourceEncoding>
@@ -23,6 +20,11 @@
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
+			</plugin>
+			<plugin>
+			  <groupId>org.jacoco</groupId>
+			  <artifactId>jacoco-maven-plugin</artifactId>
+			  <version>0.7.9</version>
 			</plugin>
 		</plugins>
 	</build>
