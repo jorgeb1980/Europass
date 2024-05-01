@@ -1,36 +1,20 @@
 package europass.core;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import europass.beans.*;
+import europass.pdf.EuropassFonts;
+
+import javax.imageio.ImageIO;
+import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import javax.imageio.ImageIO;
-
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
-
-import europass.beans.LanguageBean;
-import europass.beans.PersonalInfoBean;
-import europass.beans.ResumeBean;
-import europass.beans.TrainingBean;
-import europass.beans.WorkExperienceBean;
-import europass.pdf.EuropassFonts;
+import static europass.pdf.EuropassFonts.*;
 
 /**
  * Builds a curriculum vitae PDF in Europass format based on the information
@@ -54,9 +38,9 @@ public class EuropassBuilder {
 	// Class properties	
 	
 	/** Dates format. */
-	private SimpleDateFormat sdf;
+	private final SimpleDateFormat sdf;
 	/** Locale to be used while building the document. */
-	private Locale locale;
+	private Locale locale = Locale.getDefault();
 	
 	//--------------------------------------------------------------
 	// Class methods
@@ -73,13 +57,7 @@ public class EuropassBuilder {
 	 * @param locale Locale to be used to render internationalized text.
 	 */
 	public EuropassBuilder(Locale locale) {
-		if (locale != null) {
-			this.locale = locale; 
-		}
-		else {
-			// Machine locale
-			this.locale = Locale.getDefault();
-		}
+		if (locale != null) this.locale = locale;
 		sdf = new SimpleDateFormat("MMMM yyyy", this.locale);
 	}
 	
@@ -98,24 +76,21 @@ public class EuropassBuilder {
 	public void buildCV(ResumeBean information, OutputStream os) 
 			throws EuropassException {
 		try {
-			Document document = new Document();			
-			PdfWriter writer = PdfWriter.getInstance(document, os);			
-			document.open();		
-			setupDocument(document);		
-			paintPersonalInfo(document, information.getPersonalInfo());		
-			paintProfessionalExperience(document, information.getProfessionalExperience());		
-			paintTrainingCertifications(document, information.getTrainings());		
-			paintLanguages(document, information.getLanguages());		
+			var document = new Document();
+			var writer = PdfWriter.getInstance(document, os);
+			document.open();
+			setupDocument(document);
+			paintPersonalInfo(document, information.personalInfo());
+			paintProfessionalExperience(document, information.workExperience());
+			paintTrainingCertifications(document, information.trainings());
+			paintLanguages(document, information.languages());
 			document.close();		
 			writer.flush();		
 		}
-		catch(DocumentException de) {
+		catch(DocumentException | IOException de) {
 			throw new EuropassException(de);
 		}
-		catch(IOException ioe) {
-			throw new EuropassException(ioe);
-		}
-	}
+    }
 	
 	/**
 	 * Document margins, orientation, size, etc.
@@ -127,7 +102,7 @@ public class EuropassBuilder {
 	}
 	
 	/**
-	 * Creates an horizontal section in the document.
+	 * Creates a horizontal section in the document.
 	 * <pre>
 	 * {@code
 	 *  ____________________________________________________
@@ -143,9 +118,10 @@ public class EuropassBuilder {
 	 * @throws DocumentException In case of any problem handling the PDF.
 	 */
 	private void section(
-			Document document,
-			String leftTitle,
-			PdfPTable content) throws DocumentException {
+		Document document,
+		String leftTitle,
+		PdfPTable content
+	) throws DocumentException {
 		section(document, leftTitle, null, content);
 	}
 	
@@ -168,12 +144,12 @@ public class EuropassBuilder {
 	 * @throws DocumentException In case of any problem handling the PDF.
 	 */
 	private void section(
-			Document document,
-			String leftTitle,
-			String rightTitle,
-			PdfPTable content) throws DocumentException {
-		section(document, leftTitle, rightTitle, 
-			EuropassFonts.relevantFont(), content);
+		Document document,
+		String leftTitle,
+		String rightTitle,
+		PdfPTable content
+	) throws DocumentException {
+		section(document, leftTitle, rightTitle, RELEVANT_FONT, content);
 	}
 
 	/**
@@ -196,24 +172,21 @@ public class EuropassBuilder {
 	 * @throws DocumentException In case of any problem handling the PDF.
 	 */
 	private void section(
-			Document document,
-			String leftTitle,
-			String rightTitle,
-			Font rightTitleStyle,
-			PdfPTable content) throws DocumentException {
-		PdfPTable theSection = new PdfPTable(new float[]{
-				LEFT_SIDE_WIDTH, 100 - LEFT_SIDE_WIDTH});
+		Document document,
+		String leftTitle,
+		String rightTitle,
+		Font rightTitleStyle,
+		PdfPTable content
+	) throws DocumentException {
+		var theSection = new PdfPTable(new float[]{LEFT_SIDE_WIDTH, 100 - LEFT_SIDE_WIDTH});
 		theSection.setWidthPercentage(95);		
 		// left part
-		PdfPCell titleCell = cell(new Phrase(leftTitle, 
-				EuropassFonts.leftTitleFont()));
+		var titleCell = cell(new Phrase(leftTitle, LEFT_TITLE_FONT));
 		titleCell.setHorizontalAlignment(PdfPCell.ALIGN_RIGHT);
 		titleCell.setVerticalAlignment(PdfPCell.ALIGN_BOTTOM);
 		theSection.addCell(titleCell);
 		if (rightTitle != null) {
-			theSection.addCell(cell(new Phrase(rightTitle, 
-				rightTitleStyle))).
-					setVerticalAlignment(PdfPCell.ALIGN_BOTTOM);
+			theSection.addCell(cell(new Phrase(rightTitle, rightTitleStyle))).setVerticalAlignment(PdfPCell.ALIGN_BOTTOM);
 			theSection.addCell(cell(new Phrase("")));
 		}
 		// Right part
@@ -231,7 +204,7 @@ public class EuropassBuilder {
 	 */
 	private void separatorSection(Document document, String title)
 			throws DocumentException, IOException {
-		PdfPTable separatorTable = new PdfPTable(new float[]{100});
+		var separatorTable = new PdfPTable(new float[]{100});
 		separatorTable.addCell(cell(iconPhrase("separator.png", "")));
 		section(document, title, separatorTable);
 	}
@@ -242,7 +215,7 @@ public class EuropassBuilder {
 	 * @return Cell w/o borders.
 	 */
 	private PdfPCell cell(Phrase phrase) {
-		PdfPCell ret = new PdfPCell(phrase);
+		var ret = new PdfPCell(phrase);
 		ret.setBorder(0);
 		return ret;
 	}
@@ -253,7 +226,7 @@ public class EuropassBuilder {
 	 * @return Cell w/o borders.
 	 */
 	private PdfPCell cell(String text) {
-		return cell(text, EuropassFonts.baseFont());
+		return cell(text, BASE_FONT);
 	}
 	
 	/**
@@ -263,8 +236,7 @@ public class EuropassBuilder {
 	 * @return Cell w/o borders.
 	 */
 	private PdfPCell cell(String text, Font font) {
-		PdfPCell ret = new PdfPCell(
-			new Phrase(text, font));
+		var ret = new PdfPCell(new Phrase(text, font));
 		ret.setBorder(0);
 		return ret;
 	}
@@ -275,7 +247,7 @@ public class EuropassBuilder {
 	 * @return Cell w/o borders.
 	 */
 	private PdfPCell cell(PdfPTable table) {
-		PdfPCell ret = new PdfPCell(table);
+		var ret = new PdfPCell(table);
 		ret.setBorder(0);
 		return ret;
 	}
@@ -288,42 +260,40 @@ public class EuropassBuilder {
 	 * @throws IOException If found any I/O problem.
 	 */
 	private void paintLanguages(
-			Document document, 
-			List<LanguageBean> languages)
-					throws DocumentException, IOException {
+		Document document,
+		List<LanguageBean> languages
+	) throws DocumentException, IOException {
 		if (languages != null) {
 			separatorSection(document, i18n("languages.title"));
-			if (languages != null) {
-				PdfPTable languagesTable = new PdfPTable(new float[]{25, 25, 25, 25});
-				PdfPCell languagesCell = cell(i18n("languages.header"), EuropassFonts.littleBlueFont());
-				languagesCell.setPaddingBottom(10);
-				languagesHeadersBorders(languagesCell);
-				languagesTable.addCell(languagesCell);
-				PdfPCell conversationCell = cell(i18n("conversation.title"), EuropassFonts.littleBlueFont());
-				languagesHeadersBorders(conversationCell);
-				languagesTable.addCell(conversationCell);
-				PdfPCell writingCell = cell(i18n("writing.title"), EuropassFonts.littleBlueFont());
-				languagesHeadersBorders(writingCell);
-				languagesTable.addCell(writingCell);
-				PdfPCell readingCell = cell(i18n("reading.title"), EuropassFonts.littleBlueFont());
-				languagesHeadersBorders(readingCell);
-				languagesTable.addCell(readingCell);
-				for (LanguageBean language: languages) {
-					PdfPCell languageCell = cell(language.getLanguage());
-					languagesTable.addCell(languageCell);
-					PdfPCell conversationLevelCell = cell(language.getConversationLevel());
-					languageBorders(conversationLevelCell);
-					languagesTable.addCell(conversationLevelCell);
-					PdfPCell writingLevelCell = cell(language.getWritingLevel());
-					languageBorders(writingLevelCell);
-					languagesTable.addCell(writingLevelCell);
-					PdfPCell readingLevelCell = cell(language.getReadingLevel());
-					languageBorders(readingLevelCell);
-					languagesTable.addCell(readingLevelCell);
-				}
-				section(document, "", languagesTable);
-			}
-		}
+            var languagesTable = new PdfPTable(new float[]{25, 25, 25, 25});
+            var languagesCell = cell(i18n("languages.header"), LITTLE_BLUE_FONT);
+            languagesCell.setPaddingBottom(10);
+            languagesHeadersBorders(languagesCell);
+            languagesTable.addCell(languagesCell);
+            var conversationCell = cell(i18n("conversation.title"), LITTLE_BLUE_FONT);
+            languagesHeadersBorders(conversationCell);
+            languagesTable.addCell(conversationCell);
+			var writingCell = cell(i18n("writing.title"), LITTLE_BLUE_FONT);
+            languagesHeadersBorders(writingCell);
+            languagesTable.addCell(writingCell);
+			var readingCell = cell(i18n("reading.title"), LITTLE_BLUE_FONT);
+            languagesHeadersBorders(readingCell);
+            languagesTable.addCell(readingCell);
+            for (LanguageBean language: languages) {
+				var languageCell = cell(language.language());
+                languagesTable.addCell(languageCell);
+				var conversationLevelCell = cell(language.conversationLevel());
+                languageBorders(conversationLevelCell);
+                languagesTable.addCell(conversationLevelCell);
+				var writingLevelCell = cell(language.writingLevel());
+                languageBorders(writingLevelCell);
+                languagesTable.addCell(writingLevelCell);
+				var readingLevelCell = cell(language.readingLevel());
+                languageBorders(readingLevelCell);
+                languagesTable.addCell(readingLevelCell);
+            }
+            section(document, "", languagesTable);
+        }
 	}
 	
 	// Border style for languages headers
@@ -338,7 +308,6 @@ public class EuropassBuilder {
 		cell.setBorderWidthBottom(0.5f);
 	}
 
-
 	/**
 	 * Paints the training and certifications of the user into the document.
 	 * @param document iText document with the resumé.
@@ -347,28 +316,29 @@ public class EuropassBuilder {
 	 * @throws IOException If found any I/O problem.
 	 */
 	private void paintTrainingCertifications(
-			Document document,
-			List<TrainingBean> education)  
-					throws DocumentException, IOException {
+		Document document,
+		List<TrainingBean> education
+	) throws DocumentException, IOException {
 		if (education != null) {
 			separatorSection(document, i18n("training.title"));
-			List<TrainingBean> trainings = education;
-			if (trainings != null) {
-				Collections.sort(trainings);
-				for (TrainingBean training: trainings) {
-					String title = buildTimePeriod(training.getStartDate(), training.getEndDate());
-					PdfPTable content = new PdfPTable(new float[]{100});
-					if (isSet(training.getEducationPlace())) {
-						content.addCell(cell(training.getEducationPlace()));
-					}
-					if (isSet(training.getDescription())) {
-						content.addCell(cell(training.getDescription()));
-					}
-					section(document, title, training.getTitle(), 
-						EuropassFonts.jobTitleFont(), content);
-				}
-			}
-		}
+            for (var training: education.stream().sorted().toList()) {
+                var title = buildTimePeriod(training.start(), training.end());
+                var content = new PdfPTable(new float[]{100});
+                if (isSet(training.educationPlace())) {
+                    content.addCell(cell(training.educationPlace()));
+                }
+                if (isSet(training.description())) {
+                    content.addCell(cell(training.description()));
+                }
+                section(
+					document,
+					title,
+					training.title(),
+                    JOB_TITLE_FONT,
+					content
+				);
+            }
+        }
 	}
 
 	/**
@@ -376,31 +346,33 @@ public class EuropassBuilder {
 	 * @param document iText document with the resumé.
 	 * @param professionalExperience Uers's professional experience.
 	 */
-	private void paintProfessionalExperience(Document document,
-			List<WorkExperienceBean> professionalExperience) 
-					throws DocumentException, IOException {
+	private void paintProfessionalExperience(
+		Document document,
+		List<WorkExperienceBean> professionalExperience
+	) throws DocumentException, IOException {
 		if (professionalExperience != null) {
 			separatorSection(document, i18n("experience.title"));
-			if (professionalExperience != null) {
-				// Sort experiences by date
-				Collections.sort(professionalExperience);
-				for (WorkExperienceBean exp: professionalExperience) {
-					// Section title is the time period (left side)
-					String title = buildTimePeriod(exp.getStartDate(), exp.getEndDate());
-					PdfPTable content = new PdfPTable(new float[]{100});
-					if (isSet(exp.getCompany())) {
-						// First line of the content: company
-						content.addCell(cell(exp.getCompany()));
-					}
-					if (isSet(exp.getDescription())) {
-						// Second line of the content: description
-						content.addCell(cell(exp.getDescription()));
-					}
-					section(document, title, exp.getJobTitle(), 
-						EuropassFonts.jobTitleFont(), content);
-				}
-			}
-		}
+            for (var exp: professionalExperience.stream().sorted().toList()) {
+                // Section title is the time period (left side)
+                var title = buildTimePeriod(exp.start(), exp.end());
+                var content = new PdfPTable(new float[]{100});
+                if (isSet(exp.company())) {
+                    // First line of the content: company
+                    content.addCell(cell(exp.company()));
+                }
+                if (isSet(exp.description())) {
+                    // Second line of the content: description
+                    content.addCell(cell(exp.description()));
+                }
+                section(
+					document,
+					title,
+					exp.title(),
+                    JOB_TITLE_FONT,
+					content
+				);
+            }
+        }
 	}
 
 
@@ -412,11 +384,9 @@ public class EuropassBuilder {
 	 * or else 'startMonth startYear - ${currently}' if the end date is null.
 	 */
 	private String buildTimePeriod(Date startDate, Date endDate) {
-		String start = 
-			startDate!=null?sdf.format(startDate):"";
-		String end = 
-			endDate!=null?sdf.format(endDate): i18n("misc.currently");
-		String title = start;
+		var start = startDate!=null?sdf.format(startDate):"";
+		var end = endDate!=null?sdf.format(endDate): i18n("misc.currently");
+		var title = start;
 		title += " - ";
 		if (isSet(end)) {
 			title += end;
@@ -434,20 +404,15 @@ public class EuropassBuilder {
 	//
 	//
 	private String toCamelCase(final String init) {
-	    if (init==null)
-	        return null;
-	
-	    final StringBuilder ret = new StringBuilder(init.length());
-	
-	    for (final String word : init.split(" ")) {
+	    if (init==null) return null;
+	    var ret = new StringBuilder(init.length());
+	    for (var word : init.split(" ")) {
 	        if (!word.isEmpty()) {
 	            ret.append(word.substring(0, 1).toUpperCase());
 	            ret.append(word.substring(1).toLowerCase());
 	        }
-	        if (!(ret.length()==init.length()))
-	            ret.append(" ");
+	        if (!(ret.length()==init.length())) ret.append(" ");
 	    }
-	
 	    return ret.toString();
 	}
 	
@@ -459,55 +424,45 @@ public class EuropassBuilder {
 	 * @throws IOException If found any I/O problem.
 	 */
 	private void paintPersonalInfo(
-			Document document,
-			PersonalInfoBean personalInfo) 
-					throws DocumentException, IOException {
+		Document document,
+		PersonalInfoBean personalInfo
+	) throws DocumentException, IOException {
 		if (personalInfo != null) {
 			// Build the table with the personal info
-			PdfPTable content = new PdfPTable(new float[]{100});
-			
-			if (isSet(personalInfo.getAddress())) {
-				content.addCell(cell(iconPhrase("address.png", 
-					personalInfo.getAddress())));
-			}
-			
-			if (isSet(personalInfo.getHomePhone()) || isSet(personalInfo.getMobilePhone())) {
-				Paragraph tlPhrase = new Paragraph();
-				if (isSet(personalInfo.getHomePhone())) {
-					tlPhrase.add(iconPhrase("phone.png",personalInfo.getHomePhone()));
+			var content = new PdfPTable(new float[]{100});
+			if (isSet(personalInfo.address()))
+				content.addCell(cell(iconPhrase("address.png", personalInfo.address())));
+			if (isSet(personalInfo.homePhone()) || isSet(personalInfo.mobilePhone())) {
+				var tlPhrase = new Paragraph();
+				if (isSet(personalInfo.homePhone())) {
+					tlPhrase.add(iconPhrase("phone.png",personalInfo.homePhone()));
 					tlPhrase.add("   ");
 				}
-				if (isSet(personalInfo.getMobilePhone())) {
-					tlPhrase.add(iconPhrase("mobile.png",personalInfo.getMobilePhone()));
+				if (isSet(personalInfo.mobilePhone())) {
+					tlPhrase.add(iconPhrase("mobile.png",personalInfo.mobilePhone()));
 				}	
 				content.addCell(cell(tlPhrase));		
 			}
-			
-			if (isSet(personalInfo.getMail())) {
-				content.addCell(cell(iconPhrase("mail.png",personalInfo.getMail())));
-			}
-			if (isSet(personalInfo.getWebAddresses())) {
-				content.addCell(cell(iconPhrase("web.png",
-					composeWebAddresses(personalInfo.getWebAddresses()))));
-			}
-			if (personalInfo.getInstantMessaging() != null) {
-				for (String key: personalInfo.getInstantMessaging().keySet()) {
-					String value = personalInfo.getInstantMessaging().get(key);
-					content.addCell(cell(iconPhrase("icq.png", key + " - " + value)));
-				}
-			}
-			// Compose the table in the document
-			section(document, i18n("personal.title"), personalInfo.getName(), content);
+			if (isSet(personalInfo.mail()))
+				content.addCell(cell(iconPhrase("mail.png",personalInfo.mail())));
+			if (isSet(personalInfo.getWebAddresses()))
+				content.addCell(cell(iconPhrase("web.png", composeWebAddresses(personalInfo.getWebAddresses()))));
+            for (String key : personalInfo.getInstantMessaging().keySet()) {
+                var value = personalInfo.getInstantMessaging().get(key);
+                content.addCell(cell(iconPhrase("icq.png", key + " - " + value)));
+            }
+            // Compose the table in the document
+			section(document, i18n("personal.title"), personalInfo.name(), content);
 		}
 	}
 	
 	// Composes a list of web addresses
 	private String composeWebAddresses(List<String> webAddresses) {
-		StringBuilder ret = new StringBuilder();
-		int counter = 0;
+		var ret = new StringBuilder();
+		var counter = 0;
 		for (String address: webAddresses) {
 			if (counter++ > 0) {
-				ret.append(System.getProperty("line.separator"));
+				ret.append(System.lineSeparator());
 			}
 			ret.append(address);
 		}
@@ -518,12 +473,12 @@ public class EuropassBuilder {
 
 	// Tells whether a string is set
 	private boolean isSet(String s) {
-		return s != null && s.trim().length() > 0;
+		return s != null && !s.trim().isEmpty();
 	}
 	
 	// Tells whether a string list is set
 	private boolean isSet(List<String> s) {
-		return s != null && s.size() > 0;
+		return s != null && !s.isEmpty();
 	}
 
 	/**
@@ -535,16 +490,15 @@ public class EuropassBuilder {
 	 * @throws IOException If found any I/O problem.
 	 */
 	private Phrase iconPhrase(
-				String iconPath, 
-				String phrase) 
-			throws IOException, DocumentException {
-		java.awt.Image image = 
-			ImageIO.read(new ByteArrayInputStream(imageContent(iconPath)));
-		Image addressImg = Image.getInstance(image, null);		
+			String iconPath,
+			String phrase
+	) throws IOException, DocumentException {
+		var image = ImageIO.read(new ByteArrayInputStream(imageContent(iconPath)));
+		var addressImg = Image.getInstance(image, null);
 		addressImg.scalePercent(45);
-		Paragraph paragraph = new Paragraph();
-		Phrase addressPhrase = new Phrase();
-		addressPhrase.setFont(EuropassFonts.baseFont());
+		var paragraph = new Paragraph();
+		var addressPhrase = new Phrase();
+		addressPhrase.setFont(BASE_FONT);
 		paragraph.add(new Chunk(addressImg, 0, 0, true));
 		addressPhrase.add("   " + phrase);
 		paragraph.add(addressPhrase);
@@ -556,12 +510,12 @@ public class EuropassBuilder {
 	 * Returns the binary content of an image inside the classpath
 	 * @param path Image path inside the classpath.
 	 * @return Byte array with the binary content of the image.
-	 * @throw IOException If found any problem reading the image
+	 * @throws IOException If found any problem reading the image
 	 */
 	private byte[] imageContent(String path) throws IOException {
-		byte ret[] = null;
+		byte[] ret = null;
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		byte buffer[] = new byte[BUFFER_SIZE];
+		byte[] buffer = new byte[BUFFER_SIZE];
 		InputStream is = 
 			EuropassBuilder.class.getClassLoader().getResourceAsStream(path);
 		boolean keepOn = true;
