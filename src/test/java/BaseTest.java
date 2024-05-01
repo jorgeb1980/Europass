@@ -1,15 +1,15 @@
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+
 import java.io.File;
 import java.io.FileOutputStream;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
 
 public abstract class BaseTest {
 	protected File file = null;
 	protected FileOutputStream os = null; 
 	
-	@Before
+	@BeforeEach
 	public void init() {
 		try {
 			file = File.createTempFile("eurocv", ".pdf");
@@ -18,11 +18,11 @@ public abstract class BaseTest {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			Assert.fail();
+			Assertions.fail();
 		}
 	}
 	
-	@After
+	@AfterEach
 	public void end() {
 		try {
 			os.close();
@@ -31,7 +31,7 @@ public abstract class BaseTest {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			Assert.fail();
+			Assertions.fail();
 		}
 	}
 }

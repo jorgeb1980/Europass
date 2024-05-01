@@ -1,9 +1,8 @@
-import org.junit.Assert;
-import org.junit.Test;
-
 import europass.beans.ResumeBean;
 import europass.core.EuropassBuilder;
 import europass.core.EuropassException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class TestDefaultCV extends BaseTest {
 
@@ -18,7 +17,7 @@ public class TestDefaultCV extends BaseTest {
 		}
 		catch (EuropassException e) {
 			e.printStackTrace();
-			Assert.fail();
+			Assertions.fail();
 		}
 	}
 
